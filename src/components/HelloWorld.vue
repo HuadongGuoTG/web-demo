@@ -120,6 +120,7 @@
         v-model="dynamic"
         :rule="rule"
         :option="options"
+        :value.sync="parameters"
       ></form-create>
       <el-form-item label="">
         <el-button
@@ -150,6 +151,7 @@ export default {
         url: '',
         tag: '',
       },
+      parameters: {},
       modules: [],
       test_list: [],
       module_tests: [],
@@ -227,6 +229,7 @@ export default {
     },
     submit () {
       console.log(this.plan);
+      console.log(this.parameters);
     },
     generateDom (data) {
       var push_elment = {
@@ -264,9 +267,8 @@ export default {
             },
             children: [
               {
-                type: 'el-input',
+                type: 'input',
                 field: 'data_set',
-                value: ''
               }
             ]
           }
@@ -283,7 +285,7 @@ export default {
         for (let key in list[i].envs) {
           let col = deepCopy(col_element)
           col.children[0].props.label = key.toUpperCase().replaceAll("_", " ")
-          col.children[0].children[0].field = key
+          col.children[0].children[0].field = list[i].title.toLowerCase() + "." + key.toLowerCase()
           col.children[0].children[0].value = list[i].envs[key]
           row.children.push(col)
           if (k == 1) {
@@ -299,13 +301,13 @@ export default {
         }
         collapses.push(collapse)
       }
+      let root = deepCopy(push_elment)
       for (let m = 0; m < collapses.length; m++) {
-        push_elment.children.push(collapses[m])
+        root.children.push(collapses[m])
       }
-      this.rule.push(push_elment)
+      this.rule.push(root)
     },
     moduleListChanged (val) {
-      console.log(val)
       // 移除被删除的组件
       let removeList = []
       for (let i = 0; i < this.doms.length; i++) {
@@ -322,6 +324,11 @@ export default {
         if (removeList.indexOf(i) < 0) {
           this.doms.push(tmpDoms[i])
           this.rule.push(tmpRule[i])
+        } else {
+          for (let env in tmpDoms[i].envs) {
+            let key = tmpDoms[i].title.toLowerCase() + "." + env.toLowerCase()
+            delete this.parameters[key]
+          }
         }
       }
 
@@ -338,8 +345,14 @@ export default {
           this.doms.push(this.module_tests[i])
         }
       }
+      for (let i = 0; i < newDoms.length; i++) {
+        for (let env in newDoms[i].envs) {
+          let key = newDoms[i].title.toLowerCase() + "." + env.toLowerCase()
+          this.parameters[key] = newDoms[i].envs[env]
+        }
+      }
+      // console.log(this.parameters)
       this.generateDom(JSON.stringify(newDoms))
-      console.log("val: " + val.length + ", doms: " + this.doms.length + ", rule: " + this.rule.length)
     }
   }
 }
