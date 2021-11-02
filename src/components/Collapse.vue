@@ -267,7 +267,7 @@ export default {
         children: [
           {
             type: 'el-collapse-item',
-            style: "padding-left: 50px; font-size: 1em; flex: 1 0 90%; order: 1",
+            style: "padding-left: 50px; font-size: 1em;",
             props: {
               title: ''
             },
@@ -348,9 +348,5 @@ export default {
 .app-container {
   width: 60%;
   text-align: left;
-}
-.collapse-title {
-  flex: 1 0 90%;
-  order: 1;
 }
 </style>
