@@ -98,20 +98,30 @@
         ></el-input>
       </el-form-item>
 
+      <el-form-item label="MODULE TESTS">
+        <el-select
+          v-model="modules"
+          multiple
+          filterable
+          placeholder="请选择"
+          @change="moduleListChanged"
+        >
+          <el-option
+            v-for="item in test_list"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+
       <form-create
         v-model="dynamic"
         :rule="rule"
         :option="options"
       ></form-create>
       <el-form-item label="">
-        <el-button
-          @click="generateCreate"
-          round
-        >生成Create Schema表单</el-button>
-        <el-button
-          @click="generateLoad"
-          round
-        >生成Load Data表单</el-button>
         <el-button
           @click="submit"
           round
@@ -140,6 +150,10 @@ export default {
         url: '',
         tag: '',
       },
+      modules: [],
+      test_list: [],
+      module_tests: [],
+      doms: [],
       dynamic: {
         skip: true,
         data_set: 'tpch',
@@ -155,27 +169,6 @@ export default {
           labelWidth: '160px',
           size: 'medium'
         }
-      },
-      rules: {
-        name: [
-          { required: true, message: '姓名不能为空', trigger: 'blur' },
-          { pattern: /^[\u4e00-\u9fa5]{2,5}$/, message: '姓名必须是2-5个汉字', trigger: 'blur' }
-        ],
-        gender: [{ required: true, message: '性别不能为空', trigger: 'change' }],
-        birthday: [{ required: true, message: '出生日期不能为空', trigger: 'change' }],
-        mobile: [
-          { required: true, message: '手机号码不能为空', triggler: 'blur' },
-          { pattern: /^[1][35789]\d{9}$/, message: '手机号码必须要符合规范', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '邮箱地址不能为空', trigger: 'blur' },
-          {
-            pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
-            message: '邮箱地址必须要符合规范',
-            trigger: 'blur'
-          }
-        ],
-        address: [{ required: true, message: '家庭住址不能为空', trigger: 'blur' }]
       }
     }
   },
@@ -183,50 +176,11 @@ export default {
     msg: String
   },
   created () {
-    // this.init()
+    this.init()
   },
   methods: {
     init () {
-      let options = [];
-      for (var i = 0; i < this.plan.pipelines.length; i++) {
-        options.push(
-          {
-            value: this.plan.pipelines[i],
-            label: this.plan.pipelines[i],
-            disabled: false
-          }
-        )
-      }
-
-      console.log("init");
-      // this.rule.push(
-      //   {
-      //     type: 'div',
-      //     className: 'app-container',
-      //     style: "margin-left: 35px",
-      //     children: [
-      //       {
-      //         type: 'el-form-item',
-      //         props: {
-      //           label: 'TEST PLAN',
-      //           size: 'medium'
-      //         },
-      //         children: [
-      //           {
-      //             type: 'select',
-      //             field: 'test_plan',
-      //             value: this.plan.pipelines,
-      //             options: options
-      //           }
-      //         ]
-      //       }
-      //     ]
-      //   }
-      // )
-    },
-    generateCreate () {
-      console.log("generate Create Schema");
-      let modules = [
+      this.module_tests = [
         {
           title: 'create_schema',
           envs: {
@@ -249,10 +203,27 @@ export default {
           }
         }
       ]
-      this.generateDom(JSON.stringify(modules))
-    },
-    generateLoad () {
-      console.log("generate Load Data")
+
+      let options = [];
+      for (let i = 0; i < this.plan.pipelines.length; i++) {
+        options.push(
+          {
+            value: this.plan.pipelines[i],
+            label: this.plan.pipelines[i],
+            disabled: false
+          }
+        );
+      }
+
+      for (let i = 0; i < this.module_tests.length; i++) {
+        this.test_list.push(
+          {
+            value: this.module_tests[i].title,
+            label: this.module_tests[i].title,
+          }
+        )
+      }
+      // console.log("init");
     },
     submit () {
       console.log(this.plan);
@@ -310,25 +281,19 @@ export default {
         let row = deepCopy(row_element)
         let k = 0
         for (let key in list[i].envs) {
-          // console.log(key + " : " + list[i].envs[key] + " : " + k + " : " + (k == 1))
           let col = deepCopy(col_element)
           col.children[0].props.label = key.toUpperCase().replaceAll("_", " ")
           col.children[0].children[0].field = key
           col.children[0].children[0].value = list[i].envs[key]
           row.children.push(col)
-          // console.log(col.children[0].field)
           if (k == 1) {
             k = 0
             rows.push(row)
             row = deepCopy(row_element)
-            // row.children.push(col)
           } else {
-            // row.children.push(col)
-            // rows.push(row)
             k = k + 1
           }
         }
-        // console.log("row length: " + rows.length)
         for (let j = 0; j < rows.length; j++) {
           collapse.children[0].children.push(rows[j])
         }
@@ -338,6 +303,43 @@ export default {
         push_elment.children.push(collapses[m])
       }
       this.rule.push(push_elment)
+    },
+    moduleListChanged (val) {
+      console.log(val)
+      // 移除被删除的组件
+      let removeList = []
+      for (let i = 0; i < this.doms.length; i++) {
+        let title = this.doms[i].title
+        if (val.indexOf(title) < 0) {
+          removeList.push(i)
+        }
+      }
+      let tmpDoms = this.doms;
+      let tmpRule = this.rule;
+      this.doms = []
+      this.rule = []
+      for (let i = 0; i < tmpDoms.length; i++) {
+        if (removeList.indexOf(i) < 0) {
+          this.doms.push(tmpDoms[i])
+          this.rule.push(tmpRule[i])
+        }
+      }
+
+      let exists = []
+      for (let i = 0; i < this.doms.length; i++) {
+        exists.push(this.doms[i].title)
+      }
+
+      let newDoms = []
+      for (let i = 0; i < this.module_tests.length; i++) {
+        let title = this.module_tests[i].title
+        if (val.indexOf(title) > -1 && exists.indexOf(title) < 0) {
+          newDoms.push(this.module_tests[i])
+          this.doms.push(this.module_tests[i])
+        }
+      }
+      this.generateDom(JSON.stringify(newDoms))
+      console.log("val: " + val.length + ", doms: " + this.doms.length + ", rule: " + this.rule.length)
     }
   }
 }

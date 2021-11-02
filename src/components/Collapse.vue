@@ -1,352 +1,304 @@
 <template>
-  <div class="app-container">
-    <el-form
-      :model="plan"
-      label-width="160px"
-      label-position="rigth"
-    >
-      <el-form-item
-        label="TEST PLAN"
-        size="medium"
-      >
-        <el-select
-          v-model="plan.test_plan"
-          placeholder="Please select test plan"
-        >
-          <el-option
-            v-for="item in plan.pipelines"
-            :key="item"
-            :label="item"
-            :value="item"
-          ></el-option>
-        </el-select>
-      </el-form-item>
+  <section>
+    <h1>组件模式：使用&lt;form-create>&lt;/form-create> 或 &lt;FormCreate /> 标签来创建（生成）表单</h1>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item
-            label="MACHINE COUNT"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.machine_count"
-              placeholder="Please input machine count"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            label="OS"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.os"
-              placeholder="Please input OS of machine"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+    <br />
+    <a
+      href="http://www.form-create.com/v2/guide/rule.html"
+      target="_blank"
+    >表单 rule[] 生成规则</a>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item
-            label="VCPU Count"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.vcpu"
-              placeholder="Please input VCPU count"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            label="MEMORY SIZE"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.memory_size"
-              placeholder="Please input memory size(GB)"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+    <br />
+    <br />
+    <el-row>
+      <el-button
+        type="success"
+        @click="generateFormFn"
+        icon="el-icon-setting"
+      >根据JSON生成表单</el-button>
+      <el-button
+        type="primary"
+        @click="ajaxSetDataFn"
+        icon="el-icon-edit"
+      >Ajax请求初始化表单</el-button>
+      <el-button
+        type="danger"
+        @click="getFormModelFn"
+        icon="el-icon-s-promotion"
+      >获取表单Model对象</el-button>
+    </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="DISK SIZE">
-            <el-input
-              v-model="plan.disk_size"
-              placeholder="Please input disk size(GB)"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="TAG">
-            <el-input
-              v-model="plan.tag"
-              placeholder="Please input tag"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+    <br />
+    <h3>使用&lt;form-create>&lt;/form-create>标签来创建（生成）表单：</h3>
+    <form-create
+      v-model="fApi"
+      :rule="rule"
+      :option="option"
+    ></form-create>
 
-      <el-form-item label="IP LIST">
-        <el-input
-          v-model="plan.ip_list"
-          placeholder="Please input machine IPs"
-        ></el-input>
-      </el-form-item>
-
-      <form-create
-        v-model="dynamic"
-        :rule="rule"
-        :option="options"
-      ></form-create>
-      <el-form-item label="">
-        <el-button
-          @click="generateCreate"
-          round
-        >生成Create Schema表单</el-button>
-        <el-button
-          @click="generateLoad"
-          round
-        >生成Load Data表单</el-button>
-        <el-button
-          @click="submit"
-          round
-        >提交</el-button>
-      </el-form-item>
-    </el-form>
-  </div>
+    <br />
+    <!-- <h3>使用&lt;FormCreate /> 标签来创建（生成）表单：</h3> -->
+    <!-- <FormCreate v-model="fApi" :rule="rule" :option="option" /> -->
+  </section>
 </template>
-
+ 
 <script>
-import { deepCopy } from '@/tools/json'
 
 export default {
-  name: 'HelloWorld',
+  name: "Forms",
+  components: {},
   data () {
     return {
-      plan: {
-        pipelines: ["release", "test"],
-        test_plan: '',
-        machine_count: 1,
-        os: 'centos7',
-        vcpu: 8,
-        memory_size: 32,
-        disk_size: 200,
-        ip_list: '',
-        url: '',
-        tag: '',
-      },
-      dynamic: {
-        skip: true,
-        data_set: 'tpch',
-        data_size: 1,
-        drop_all: false,
-        data_url: ''
-      },
-      rule: [],
-      options: {
-        submitBtn: false,
-        resetBtn: false,
-        form: {
-          labelWidth: '160px',
-          size: 'medium'
+      value: true,
+      // 实例对象
+      fApi: {},
+
+      // 表单生成规则数组对象  生成规则：http://www.form-create.com/v2/guide/rule.html
+      // 生成规则数组中一个对象就是一个表单项（是一个json对象），在里面可以对应的表单名称、类型、属性、值、样式、类名、是否必填、错误提示等。
+      rule: [
+        {
+          type: "InputNumber",
+          field: "jiajie",
+          title: "商品增减：",
+          value: 0,
+          style: 'display:none',
+          col: {
+            md: { span: 12 }
+          },
+          validate: [
+            {
+              required: true,
+              //   min: 1,
+              message: "商品数里至少为1",
+              trigger: "change"
+            }
+          ]
         }
-      },
-      rules: {
-        name: [
-          { required: true, message: '姓名不能为空', trigger: 'blur' },
-          { pattern: /^[\u4e00-\u9fa5]{2,5}$/, message: '姓名必须是2-5个汉字', trigger: 'blur' }
-        ],
-        gender: [{ required: true, message: '性别不能为空', trigger: 'change' }],
-        birthday: [{ required: true, message: '出生日期不能为空', trigger: 'change' }],
-        mobile: [
-          { required: true, message: '手机号码不能为空', triggler: 'blur' },
-          { pattern: /^[1][35789]\d{9}$/, message: '手机号码必须要符合规范', trigger: 'blur' }
-        ],
-        email: [
-          { required: true, message: '邮箱地址不能为空', trigger: 'blur' },
-          {
-            pattern: /^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/,
-            message: '邮箱地址必须要符合规范',
-            trigger: 'blur'
-          }
-        ],
-        address: [{ required: true, message: '家庭住址不能为空', trigger: 'blur' }]
+      ],
+
+      // 组件参数配置
+      option: {
+        // 显示重置表单按扭
+        resetBtn: true,
+
+        // 表单提交按扭事件
+        onSubmit: formData => {
+          alert(JSON.stringify(formData));
+
+          console.log("获取表单中的数据：", formData);
+
+          //按钮进入提交状态
+          //   this.fApi.btn.loading();
+
+          //重置按钮禁用
+          //   this.fApi.resetBtn.disabled();
+
+          //按钮进入可点击状态
+          //   this.fApi.btn.finish();
+        }
       }
-    }
+    };
   },
-  props: {
-    msg: String
-  },
-  created () {
-    // this.init()
+  mounted () {
+    // 这里模拟ajax从后端返回数据后，如果渲染表单数据
+    window.setTimeout(() => {
+      //   this.ajaxSetDataFn();
+    }, 5000);
   },
   methods: {
-    init () {
-      let options = [];
-      for (var i = 0; i < this.plan.pipelines.length; i++) {
-        options.push(
-          {
-            value: this.plan.pipelines[i],
-            label: this.plan.pipelines[i],
-            disabled: false
-          }
-        )
-      }
+    // 设置表单数据
+    ajaxSetDataFn () {
+      this.fApi.setValue({
+        userName: "沐枫",
+        password: "123456",
+        summary: "我是请后端返回来的个人简介",
+        sex: 1,
+        hobby: [3, 4],
+        address: 5,
+        address2: [1, 4, 7],
+        volume: 35,
+        jiajie: 56,
+        color: "#000DFF",
+        dateTime: ["2020-02-01", "2020-02-30"],
+        rateNumber: 4,
+        offon: false,
+        imgFile: [
+          "https://inews.gtimg.com/newsapp_ls/0/11673675668_295195/0",
+          "https://inews.gtimg.com/newsapp_ls/0/11673508745_295195/0"
+        ]
+      });
+    },
 
-      console.log("init");
-      // this.rule.push(
-      //   {
-      //     type: 'div',
-      //     className: 'app-container',
-      //     style: "margin-left: 35px",
-      //     children: [
-      //       {
-      //         type: 'el-form-item',
-      //         props: {
-      //           label: 'TEST PLAN',
-      //           size: 'medium'
-      //         },
-      //         children: [
-      //           {
-      //             type: 'select',
-      //             field: 'test_plan',
-      //             value: this.plan.pipelines,
-      //             options: options
-      //           }
-      //         ]
-      //       }
-      //     ]
-      //   }
-      // )
-    },
-    generateCreate () {
-      console.log("generate Create Schema");
-      let modules = [
+    // 生成表单
+    generateFormFn () {
+      //   this.rule = [{}];
+      this.rule.push(
         {
-          title: 'create_schema',
-          envs: {
-            "SKIP": "false",
-            "DATA_SET": "tpch",
-            "SKIP_DROP_ALL": "false",
-            "SCHEMA_URL": ''
+          type: "slider",
+          field: "volume",
+          title: "音量大小：",
+          value: 60,
+          //value: [25, 80],  // 和range: true 时一起使用
+          props: {
+            min: 0,
+            max: 100,
+            showTip: "always",
+            range: false // 起始分段
           }
         },
+
         {
-          title: 'load_data',
-          envs: {
-            "SKIP": "false",
-            "DOWNLOAD_PATH": "",
-            "DATA_SIZE": 10,
-            "DATA_PATH": '',
-            "DATA_URL": '',
-            "SKIP_DELETE_DATA": 'false',
-            "LOAD_SCRIPT_URL": ''
-          }
-        }
-      ]
-      this.generateDom(JSON.stringify(modules))
-    },
-    generateLoad () {
-      console.log("generate Load Data")
-    },
-    submit () {
-      console.log(this.plan);
-    },
-    generateDom (data) {
-      var push_elment = {
-        type: 'el-col',
-        children: []
-      }
-      var collapse_element = {
-        type: 'el-collapse',
-        children: [
-          {
-            type: 'el-collapse-item',
-            style: "padding-left: 50px; font-size: 1em;",
-            props: {
-              title: ''
-            },
-            children: []
-          }
-        ]
-      }
-      var row_element = {
-        type: 'el-row',
-        children: []
-      }
-      var col_element = {
-        type: 'el-col',
-        props: {
-          span: 12
+          type: "InputNumber",
+          field: "jiajie",
+          title: "商品增减：",
+          value: 0,
+          col: {
+            md: { span: 12 }
+          },
+          validate: [
+            {
+              required: true,
+              //   min: 1,
+              message: "商品数里至少为1",
+              trigger: "change"
+            }
+          ]
         },
-        children: [
-          {
-            type: 'el-form-item',
-            props: {
-              label: 'SKIP DELETE DATA',
-              size: 'medium'
-            },
-            children: [
-              {
-                type: 'el-input',
-                field: 'data_set',
-                value: ''
+
+        {
+          type: "ColorPicker",
+          field: "color",
+          title: "喜欢颜色：",
+          value: "#00b102",
+          col: {
+            md: { span: 12 }
+          },
+          props: {
+            alpha: true
+          }
+        },
+
+        {
+          type: "DatePicker",
+          field: "dateTime",
+          title: "起止日期：",
+          value: ["2020-04-20", new Date()],
+          props: {
+            type: "daterange",
+            // format: "yyyy-MM-dd HH:mm:ss",
+            format: "yyyy-MM-dd",
+            placeholder: "请选择起止日期"
+          }
+        },
+
+        {
+          type: "rate",
+          field: "rateNumber",
+          title: "评分效果：",
+          value: 3,
+          props: {
+            count: 8,
+            allowHalf: true // 是否可选半星
+          },
+          validate: [
+            {
+              required: true,
+              type: "number",
+              min: 4,
+              message: "请大于3颗星",
+              trigger: "change"
+            }
+          ],
+          control: [
+            {
+              handle: function (val) {
+                console.log(val + "颗星");
               }
-            ]
+            }
+          ]
+        },
+
+        {
+          type: "switch",
+          field: "offon",
+          title: "打开关闭：",
+          value: true,
+          col: {
+            md: { span: 6 }
+          },
+          props: {
+            trueValue: true,
+            falseValue: false,
+            slot: {
+              open: "开启",
+              close: "关闭"
+            }
           }
-        ]
-      }
-      let list = JSON.parse(data)
-      let collapses = []
-      for (let i = 0; i < list.length; i++) {
-        let collapse = deepCopy(collapse_element)
-        collapse.children[0].props.title = list[i].title.toUpperCase().replaceAll("_", " ")
-        let rows = []
-        let row = deepCopy(row_element)
-        let k = 0
-        for (let key in list[i].envs) {
-          // console.log(key + " : " + list[i].envs[key] + " : " + k + " : " + (k == 1))
-          let col = deepCopy(col_element)
-          col.children[0].props.label = key.toUpperCase().replaceAll("_", " ")
-          col.children[0].children[0].field = key
-          col.children[0].children[0].value = list[i].envs[key]
-          row.children.push(col)
-          // console.log(col.children[0].field)
-          if (k == 1) {
-            k = 0
-            rows.push(row)
-            row = deepCopy(row_element)
-            // row.children.push(col)
-          } else {
-            // row.children.push(col)
-            // rows.push(row)
-            k = k + 1
+        },
+
+        {
+          type: "upload",
+          field: "imgFile",
+          title: "图片上传：",
+          value: [
+            "https://inews.gtimg.com/newsapp_ls/0/11673471712_295195/0",
+            "http://file.lotkk.com/form-create.png",
+            "https://inews.gtimg.com/newsapp_ls/0/11673643537_295195/0"
+          ],
+          col: {
+            md: { span: 18 }
+          },
+          validate: [
+            {
+              required: true,
+              type: "array",
+              min: 1,
+              message: "请上传1张图片",
+              trigger: "change"
+            }
+          ],
+          props: {
+            type: "select",
+            uploadType: "image", // file
+            name: "userPhoto", // name属性
+            multiple: true, // 是否可多选
+            allowRemove: true,
+            accept: "image/*", // 上传文件类型
+            format: ["jpg", "jpeg", "png", "gif"], // 上传文件格式
+            maxSize: 2048, // 上传文件大小最大值
+            maxLength: 5, // 上传文件数量最大值
+            action: "http://www.upimage.com/imguploadApi", // 上传后端接收API接口
+            onSuccess: function (res) {
+              console.log(res)
+              return ""; // 上传成功回调函数
+            }
           }
         }
-        // console.log("row length: " + rows.length)
-        for (let j = 0; j < rows.length; j++) {
-          collapse.children[0].children.push(rows[j])
-        }
-        collapses.push(collapse)
-      }
-      for (let m = 0; m < collapses.length; m++) {
-        push_elment.children.push(collapses[m])
-      }
-      this.rule.push(push_elment)
+      );
+    },
+
+    //获取Form表单 model对象
+    getFormModelFn () {
+      console.log("Form表单 model对象：", this.fApi.model());
+    },
+
+    getUserNameChange (e) {
+      console.log(e)
+      this.$nextTick(() => {
+        this.rule[2].value = this.rule[0].value;
+      });
+      console.log(this.fApi.getValue("userName"));
     }
   }
-}
+};
 </script>
-
-<!-- Add "scoped" attribute to limit CSS to this component only -->
-<style lang="scss">
-.app-container {
-  width: 60%;
-  text-align: left;
+ 
+<style lang="scss" scoped>
+.el-form {
+  margin: 50px auto;
+  padding: 50px;
+  width: 580px;
+  border: 1px solid gray;
+  border-radius: 8px;
 }
 </style>

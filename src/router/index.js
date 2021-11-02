@@ -19,6 +19,16 @@ export const routes = [
     component: (resolve) => require(['@/components/Dynamic'], resolve),
     name: 'dynamic',
   },
+  {
+    path: '/test',
+    component: (resolve) => require(['@/components/Test'], resolve),
+    name: 'test',
+  },
+  {
+    path: '/collapse',
+    component: (resolve) => require(['@/components/Collapse'], resolve),
+    name: 'collapse',
+  },
 ]
 
 export default new Router({
