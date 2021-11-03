@@ -22,81 +22,154 @@
         </el-select>
       </el-form-item>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item
-            label="MACHINE COUNT"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.machine_count"
-              placeholder="Please input machine count"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            label="OS"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.os"
-              placeholder="Please input OS of machine"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+      <el-tabs
+        value="ec2"
+        @tab-click="handleClick"
+      >
+        <el-tab-pane
+          label="CREATE GCP INSTANCES"
+          name="gcp"
+        >
+          <el-row>
+            <el-col :span="12">
+              <el-form-item
+                label="MACHINE COUNT"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.machine_count"
+                  placeholder="Please input machine count"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                label="OS"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.os"
+                  placeholder="Please input OS of machine"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item
-            label="VCPU Count"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.vcpu"
-              placeholder="Please input VCPU count"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item
-            label="MEMORY SIZE"
-            size="medium"
-          >
-            <el-input
-              v-model="plan.memory_size"
-              placeholder="Please input memory size(GB)"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item
+                label="VCPU Count"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.vcpu"
+                  placeholder="Please input VCPU count"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                label="MEMORY SIZE"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.memory_size"
+                  placeholder="Please input memory size(GB)"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
 
-      <el-row>
-        <el-col :span="12">
-          <el-form-item label="DISK SIZE">
-            <el-input
-              v-model="plan.disk_size"
-              placeholder="Please input disk size(GB)"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="TAG">
-            <el-input
-              v-model="plan.tag"
-              placeholder="Please input tag"
-            ></el-input>
-          </el-form-item>
-        </el-col>
-      </el-row>
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="DISK SIZE">
+                <el-input
+                  v-model="plan.disk_size"
+                  placeholder="Please input disk size(GB)"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-tab-pane>
 
-      <el-form-item label="IP LIST">
-        <el-input
-          v-model="plan.ip_list"
-          placeholder="Please input machine IPs"
-        ></el-input>
-      </el-form-item>
+        <el-tab-pane
+          label="CREATE EC2 INSTANCES"
+          name="ec2"
+        >
+          <el-row>
+            <el-col :span="12">
+              <el-form-item
+                label="MACHINE COUNT"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.machine_count"
+                  placeholder="Please input machine count"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                label="OS"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.os"
+                  placeholder="Please input OS of machine"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row>
+            <el-col :span="12">
+              <el-form-item
+                label="VCPU Count"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.vcpu"
+                  placeholder="Please input VCPU count"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item
+                label="MEMORY SIZE"
+                size="medium"
+              >
+                <el-input
+                  v-model="plan.memory_size"
+                  placeholder="Please input memory size(GB)"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+
+          <el-row>
+            <el-col :span="12">
+              <el-form-item label="DISK SIZE">
+                <el-input
+                  v-model="plan.disk_size"
+                  placeholder="Please input disk size(GB)"
+                ></el-input>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-tab-pane>
+
+        <el-tab-pane
+          label="USE EXISTING MACHINE"
+          name="exists"
+        >
+          <el-form-item label="IP LIST">
+            <el-input
+              v-model="plan.ip_list"
+              placeholder="IP_LIST=private_ip1,private_ip2,...,private_ipn;SUDO_USER=graphsql"
+            ></el-input>
+          </el-form-item>
+        </el-tab-pane>
+      </el-tabs>
 
       <el-form-item label="MODULE TESTS">
         <el-select
@@ -353,6 +426,9 @@ export default {
       }
       // console.log(this.parameters)
       this.generateDom(JSON.stringify(newDoms))
+    },
+    handleClick (tab, event) {
+      console.log(tab, event)
     }
   }
 }
