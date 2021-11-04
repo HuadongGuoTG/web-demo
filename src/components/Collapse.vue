@@ -1,295 +1,204 @@
 <template>
-  <section>
-    <h1>组件模式：使用&lt;form-create>&lt;/form-create> 或 &lt;FormCreate /> 标签来创建（生成）表单</h1>
-
-    <br />
-    <a
-      href="http://www.form-create.com/v2/guide/rule.html"
-      target="_blank"
-    >表单 rule[] 生成规则</a>
-
-    <br />
-    <br />
-    <el-row>
-      <el-button
-        type="success"
-        @click="generateFormFn"
-        icon="el-icon-setting"
-      >根据JSON生成表单</el-button>
-      <el-button
-        type="primary"
-        @click="ajaxSetDataFn"
-        icon="el-icon-edit"
-      >Ajax请求初始化表单</el-button>
-      <el-button
-        type="danger"
-        @click="getFormModelFn"
-        icon="el-icon-s-promotion"
-      >获取表单Model对象</el-button>
+  <div style="padding-left: 60px;padding-right: 60px;">
+    <el-row :gutter="30">
+      <el-col :span="12">
+        <div style="margin-bottom: 10px">Query in Single Mode</div>
+        <div id="querySingleContainer"></div>
+        <div style="margin-top: 10px">
+          <label>Version</label>
+          <el-select
+            style="margin-left: 10px"
+            v-model="querySingleVersions"
+            size="medium"
+            multiple
+            filterable
+            placeholder="Please select Version"
+          >
+            <el-option
+              v-for="data in versions"
+              :key="data"
+              :label="data"
+              :value="data"
+            ></el-option>
+          </el-select>
+          <label style="margin-left: 30px">Platform</label>
+          <el-select
+            style="margin-left: 10px"
+            v-model="querySinglePlatforms"
+            size="medium"
+            multiple
+            filterable
+            placeholder="Please select Platform"
+          >
+            <el-option
+              v-for="data in platforms"
+              :key="data"
+              :label="data"
+              :value="data"
+            ></el-option>
+          </el-select>
+        </div>
+      </el-col>
+      <el-col :span="12">
+        <div style="margin-bottom: 10px">Query in Cluster Mode</div>
+        <div id="queryClusterContainer"></div>
+        <div style="margin-top: 10px">
+          <label>Version</label>
+          <el-select
+            style="margin-left: 10px"
+            v-model="queryClusterVersions"
+            size="medium"
+            multiple
+            filterable
+            placeholder="Please select Version"
+          >
+            <el-option
+              v-for="data in versions"
+              :key="data"
+              :label="data"
+              :value="data"
+            ></el-option>
+          </el-select>
+          <label style="margin-left: 30px">Platform</label>
+          <el-select
+            style="margin-left: 10px"
+            v-model="queryClusterPlatforms"
+            size="medium"
+            multiple
+            filterable
+            placeholder="Please select Platform"
+          >
+            <el-option
+              v-for="data in platforms"
+              :key="data"
+              :label="data"
+              :value="data"
+            ></el-option>
+          </el-select>
+        </div>
+      </el-col>
     </el-row>
-
-    <br />
-    <h3>使用&lt;form-create>&lt;/form-create>标签来创建（生成）表单：</h3>
-    <form-create
-      v-model="fApi"
-      :rule="rule"
-      :option="option"
-    ></form-create>
-
-    <br />
-    <!-- <h3>使用&lt;FormCreate /> 标签来创建（生成）表单：</h3> -->
-    <!-- <FormCreate v-model="fApi" :rule="rule" :option="option" /> -->
-  </section>
+  </div>
 </template>
  
 <script>
+import { Line } from '@antv/g2plot';
 
 export default {
   name: "Forms",
   components: {},
   data () {
     return {
-      value: true,
-      // 实例对象
-      fApi: {},
-
-      // 表单生成规则数组对象  生成规则：http://www.form-create.com/v2/guide/rule.html
-      // 生成规则数组中一个对象就是一个表单项（是一个json对象），在里面可以对应的表单名称、类型、属性、值、样式、类名、是否必填、错误提示等。
-      rule: [
-        {
-          type: "InputNumber",
-          field: "jiajie",
-          title: "商品增减：",
-          value: 0,
-          style: 'display:none',
-          col: {
-            md: { span: 12 }
-          },
-          validate: [
-            {
-              required: true,
-              //   min: 1,
-              message: "商品数里至少为1",
-              trigger: "change"
-            }
-          ]
-        }
-      ],
-
-      // 组件参数配置
-      option: {
-        // 显示重置表单按扭
-        resetBtn: true,
-
-        // 表单提交按扭事件
-        onSubmit: formData => {
-          alert(JSON.stringify(formData));
-
-          console.log("获取表单中的数据：", formData);
-
-          //按钮进入提交状态
-          //   this.fApi.btn.loading();
-
-          //重置按钮禁用
-          //   this.fApi.resetBtn.disabled();
-
-          //按钮进入可点击状态
-          //   this.fApi.btn.finish();
-        }
-      }
-    };
+      datas: [],
+      versions: [],
+      platforms: [],
+      querySingleVersions: [],
+      querySinglePlatforms: [],
+      queryClusterVersions: [],
+      queryClusterPlatforms: [],
+    }
   },
   mounted () {
-    // 这里模拟ajax从后端返回数据后，如果渲染表单数据
-    window.setTimeout(() => {
-      //   this.ajaxSetDataFn();
-    }, 5000);
-  },
-  methods: {
-    // 设置表单数据
-    ajaxSetDataFn () {
-      this.fApi.setValue({
-        userName: "沐枫",
-        password: "123456",
-        summary: "我是请后端返回来的个人简介",
-        sex: 1,
-        hobby: [3, 4],
-        address: 5,
-        address2: [1, 4, 7],
-        volume: 35,
-        jiajie: 56,
-        color: "#000DFF",
-        dateTime: ["2020-02-01", "2020-02-30"],
-        rateNumber: 4,
-        offon: false,
-        imgFile: [
-          "https://inews.gtimg.com/newsapp_ls/0/11673675668_295195/0",
-          "https://inews.gtimg.com/newsapp_ls/0/11673508745_295195/0"
-        ]
-      });
-    },
-
-    // 生成表单
-    generateFormFn () {
-      //   this.rule = [{}];
-      this.rule.push(
-        {
-          type: "slider",
-          field: "volume",
-          title: "音量大小：",
-          value: 60,
-          //value: [25, 80],  // 和range: true 时一起使用
-          props: {
-            min: 0,
-            max: 100,
-            showTip: "always",
-            range: false // 起始分段
-          }
-        },
-
-        {
-          type: "InputNumber",
-          field: "jiajie",
-          title: "商品增减：",
-          value: 0,
-          col: {
-            md: { span: 12 }
-          },
-          validate: [
-            {
-              required: true,
-              //   min: 1,
-              message: "商品数里至少为1",
-              trigger: "change"
-            }
-          ]
-        },
-
-        {
-          type: "ColorPicker",
-          field: "color",
-          title: "喜欢颜色：",
-          value: "#00b102",
-          col: {
-            md: { span: 12 }
-          },
-          props: {
-            alpha: true
-          }
-        },
-
-        {
-          type: "DatePicker",
-          field: "dateTime",
-          title: "起止日期：",
-          value: ["2020-04-20", new Date()],
-          props: {
-            type: "daterange",
-            // format: "yyyy-MM-dd HH:mm:ss",
-            format: "yyyy-MM-dd",
-            placeholder: "请选择起止日期"
-          }
-        },
-
-        {
-          type: "rate",
-          field: "rateNumber",
-          title: "评分效果：",
-          value: 3,
-          props: {
-            count: 8,
-            allowHalf: true // 是否可选半星
-          },
-          validate: [
-            {
-              required: true,
-              type: "number",
-              min: 4,
-              message: "请大于3颗星",
-              trigger: "change"
-            }
-          ],
-          control: [
-            {
-              handle: function (val) {
-                console.log(val + "颗星");
-              }
-            }
-          ]
-        },
-
-        {
-          type: "switch",
-          field: "offon",
-          title: "打开关闭：",
-          value: true,
-          col: {
-            md: { span: 6 }
-          },
-          props: {
-            trueValue: true,
-            falseValue: false,
-            slot: {
-              open: "开启",
-              close: "关闭"
-            }
-          }
-        },
-
-        {
-          type: "upload",
-          field: "imgFile",
-          title: "图片上传：",
-          value: [
-            "https://inews.gtimg.com/newsapp_ls/0/11673471712_295195/0",
-            "http://file.lotkk.com/form-create.png",
-            "https://inews.gtimg.com/newsapp_ls/0/11673643537_295195/0"
-          ],
-          col: {
-            md: { span: 18 }
-          },
-          validate: [
-            {
-              required: true,
-              type: "array",
-              min: 1,
-              message: "请上传1张图片",
-              trigger: "change"
-            }
-          ],
-          props: {
-            type: "select",
-            uploadType: "image", // file
-            name: "userPhoto", // name属性
-            multiple: true, // 是否可多选
-            allowRemove: true,
-            accept: "image/*", // 上传文件类型
-            format: ["jpg", "jpeg", "png", "gif"], // 上传文件格式
-            maxSize: 2048, // 上传文件大小最大值
-            maxLength: 5, // 上传文件数量最大值
-            action: "http://www.upimage.com/imguploadApi", // 上传后端接收API接口
-            onSuccess: function (res) {
-              console.log(res)
-              return ""; // 上传成功回调函数
-            }
-          }
+    fetch('http://192.168.55.21:8000/datashow/perf_data?node=single&kind=batch_query&platform%5B%5D=GCP&version=all&query%5B%5D=bi_1',
+      {
+        headers: {
+          'Accept': 'application/json, text/javascript, */*; q=0.01',
+          "Referer": 'http://192.168.55.21:8000/datashow/performance_test',
+          'Cookie': 'jenkins-timestamper-offset=-28800000; jenkins-timestamper=system; jenkins-timestamper-local=true; screenResolution=2560x1440; JSESSIONID.f5dfd93f=node0lxzu2zuftj37vsyzqxuaplua7718.node0; TigerGraphApp=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk0OTZjOTA4LTI4ZDgtNDZmZi1hMTE4LWQxYjRjMTI0MjM3MyIsInVzZXJuYW1lIjoidGlnZXJncmFwaCIsInBhc3N3b3JkIjoiNGJlOTNiMzAzNjBiNGEwODc3NWNhYWNmMzk5YmFiMjY0YTgzNWJjYmIxMGVkMjFmYWVkOTkxMDNiMzg3MmMzYyIsImV4cCI6MTYzNjAyMDI1MCwiaWF0IjoxNjM1OTMzODUwfQ.vuxxcRxmYcyoxulEFWjISK9FARj1Zzp8ZtlCFv4ea5I; zrCookie=818409048'
         }
-      );
-    },
-
-    //获取Form表单 model对象
-    getFormModelFn () {
-      console.log("Form表单 model对象：", this.fApi.model());
-    },
-
-    getUserNameChange (e) {
-      console.log(e)
-      this.$nextTick(() => {
-        this.rule[2].value = this.rule[0].value;
+      }
+    )
+      .then(res => res.json())
+      .then(data => {
+        console.log(data);
+        let json = JSON.parse(data);
+        let xa = json["xa"]
+        let datas = json["data"]
+        let querySingleDatas = [
+          {
+            "name": '',
+            "version": '',
+            "time_cost": '',
+          }
+        ];
+        for (let i = 0; i < datas.length; i++) {
+          let querySingleData = [];
+          for (let j = 0; j < datas[i].length; j++) {
+            let queryData = {
+              "name": i,
+              "version": xa[j],
+              "time_cost": datas[i][j]
+            }
+            querySingleData.push(queryData)
+          }
+          querySingleDatas.push(querySingleData);
+        }
+        console.log(querySingleDatas);
+        let querySingleContainer = new Line('querySingleContainer', {
+          querySingleDatas,
+          xField: 'version',
+          yField: 'time_cost',
+          seriesField: 'name',
+          xAxis: {
+            label: {
+              formatter: (v) => `${v.split("_")[1]}`
+            }
+          }
+        });
+        querySingleContainer.render();
       });
-      console.log(this.fApi.getValue("userName"));
-    }
-  }
+
+    fetch('https://gw.alipayobjects.com/os/bmw-prod/e00d52f4-2fa6-47ee-a0d7-105dd95bde20.json')
+      .then((res) => res.json())
+      .then((data) => {
+        // let querySingleContainer = new Line('querySingleContainer', {
+        //   data,
+        //   xField: 'year',
+        //   yField: 'gdp',
+        //   // 数据分组字段
+        //   seriesField: 'name',
+        //   legend: {
+        //     // 图例位置
+        //     position: 'top',
+        //   },
+        //   smooth: true,
+        //   // @TODO 后续会换一种动画方式
+        //   animation: {
+        //     appear: {
+        //       animation: 'path-in',
+        //       duration: 5000,
+        //     },
+        //   },
+        // });
+
+        let queryClusterContainer = new Line('queryClusterContainer', {
+          data,
+          xField: 'year',
+          yField: 'gdp',
+          seriesField: 'name',
+          yAxis: {
+            label: {
+              formatter: (v) => `${(v / 10e8).toFixed(1)} B`,
+            },
+          },
+          legend: {
+            position: 'top',
+          },
+          smooth: true,
+          // @TODO 后续会换一种动画方式
+          animation: {
+            appear: {
+              animation: 'path-in',
+              duration: 5000,
+            },
+          },
+        });
+
+        // querySingleContainer.render();
+        queryClusterContainer.render();
+      });
+  },
+  methods: {}
 };
 </script>
  
