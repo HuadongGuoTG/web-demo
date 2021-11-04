@@ -114,13 +114,7 @@ export default {
         let json = JSON.parse(data);
         let xa = json["xa"]
         let datas = json["data"]
-        let querySingleDatas = [
-          {
-            "name": '',
-            "version": '',
-            "time_cost": '',
-          }
-        ];
+        let querySingleDatas = [];
         for (let i = 0; i < datas.length; i++) {
           let querySingleData = [];
           for (let j = 0; j < datas[i].length; j++) {
