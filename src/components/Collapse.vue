@@ -101,11 +101,8 @@ export default {
   mounted () {
     fetch('http://192.168.55.21:8000/datashow/perf_data?node=single&kind=batch_query&platform%5B%5D=GCP&version=all&query%5B%5D=bi_1',
       {
-        headers: {
-          'Accept': 'application/json, text/javascript, */*; q=0.01',
-          "Referer": 'http://192.168.55.21:8000/datashow/performance_test',
-          'Cookie': 'jenkins-timestamper-offset=-28800000; jenkins-timestamper=system; jenkins-timestamper-local=true; screenResolution=2560x1440; JSESSIONID.f5dfd93f=node0lxzu2zuftj37vsyzqxuaplua7718.node0; TigerGraphApp=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Ijk0OTZjOTA4LTI4ZDgtNDZmZi1hMTE4LWQxYjRjMTI0MjM3MyIsInVzZXJuYW1lIjoidGlnZXJncmFwaCIsInBhc3N3b3JkIjoiNGJlOTNiMzAzNjBiNGEwODc3NWNhYWNmMzk5YmFiMjY0YTgzNWJjYmIxMGVkMjFmYWVkOTkxMDNiMzg3MmMzYyIsImV4cCI6MTYzNjAyMDI1MCwiaWF0IjoxNjM1OTMzODUwfQ.vuxxcRxmYcyoxulEFWjISK9FARj1Zzp8ZtlCFv4ea5I; zrCookie=818409048'
-        }
+        method: 'GET',
+        mode: 'cors',
       }
     )
       .then(res => res.json())
