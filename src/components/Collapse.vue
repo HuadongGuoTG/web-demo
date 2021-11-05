@@ -12,6 +12,7 @@
             size="medium"
             multiple
             filterable
+            @change="singleVersion"
             placeholder="Please select Version"
           >
             <el-option
@@ -21,7 +22,7 @@
               :value="data"
             ></el-option>
           </el-select>
-          <label style="margin-left: 30px">Platform</label>
+          <!-- <label style="margin-left: 30px">Platform</label>
           <el-select
             style="margin-left: 10px"
             v-model="querySinglePlatforms"
@@ -36,7 +37,7 @@
               :label="data"
               :value="data"
             ></el-option>
-          </el-select>
+          </el-select> -->
         </div>
       </el-col>
       <el-col :span="12">
@@ -50,6 +51,7 @@
             size="medium"
             multiple
             filterable
+            @change="clusterVersion"
             placeholder="Please select Version"
           >
             <el-option
@@ -59,7 +61,7 @@
               :value="data"
             ></el-option>
           </el-select>
-          <label style="margin-left: 30px">Platform</label>
+          <!-- <label style="margin-left: 30px">Platform</label>
           <el-select
             style="margin-left: 10px"
             v-model="queryClusterPlatforms"
@@ -74,7 +76,7 @@
               :label="data"
               :value="data"
             ></el-option>
-          </el-select>
+          </el-select> -->
         </div>
       </el-col>
     </el-row>
@@ -99,78 +101,73 @@ export default {
     }
   },
   mounted () {
-    fetch('http://192.168.55.21:8000/datashow/perf_data?node=single&kind=batch_query&platform%5B%5D=GCP&version=all&query%5B%5D=bi_1',
-      {
-        method: 'GET',
-        mode: 'cors',
-      }
-    )
-      .then(res => res.json())
-      .then(data => {
-        console.log(data);
-        let json = JSON.parse(data);
-        let xa = json["xa"]
-        let datas = json["data"]
-        let querySingleDatas = [];
-        for (let i = 0; i < datas.length; i++) {
-          let querySingleData = [];
-          for (let j = 0; j < datas[i].length; j++) {
-            let queryData = {
-              "name": i,
-              "version": xa[j],
-              "time_cost": datas[i][j]
+    let result = {
+      "error": false,
+      "message": "",
+      "results": [
+        {
+          "@@result": [
+            {
+              "build_date": "2021-11-04 00:00:00",
+              "load_speed": 585633,
+              "version": "3.4.0",
+              "name": "load_data1"
+            },
+            {
+              "build_date": "2021-11-04 00:00:00",
+              "load_speed": 1185633,
+              "version": "3.4.0",
+              "name": "load_data2"
+            },
+            {
+              "build_date": "2021-11-05 00:00:00",
+              "load_speed": 1585643,
+              "version": "3.5.0",
+              "name": "load_data1"
+            },
+            {
+              "build_date": "2021-11-07 00:00:00",
+              "load_speed": 1585663,
+              "version": "3.5.0",
+              "name": "load_data2"
             }
-            querySingleData.push(queryData)
-          }
-          querySingleDatas.push(querySingleData);
+          ]
         }
-        console.log(querySingleDatas);
-        let querySingleContainer = new Line('querySingleContainer', {
-          querySingleDatas,
+      ]
+    };
+    this.draw_table(result, 'querySingleContainer');
+    this.draw_table(result, 'queryClusterContainer');
+
+    this.singleVersion([]);
+    this.clusterVersion([]);
+  },
+  methods: {
+    draw_table (data, tag) {
+      if (!data['error']) {
+        let datas = []
+        for (let k = 0; k < data["results"].length; k++) {
+          let results = data["results"][k]["@@result"];
+          for (let i = 0; i < results.length; i++) {
+            let result = results[i];
+            datas.push({
+              "version": result["version"] + "_" + result["build_date"],
+              "load_speed": result["load_speed"],
+              "name": result["name"]
+            });
+            if (this.versions.indexOf(result["version"]) < 0) {
+              this.versions.push(result["version"])
+            }
+          }
+        }
+        let querySingleContainer = new Line(tag, {
+          data: datas,
           xField: 'version',
-          yField: 'time_cost',
+          yField: 'load_speed',
           seriesField: 'name',
           xAxis: {
             label: {
-              formatter: (v) => `${v.split("_")[1]}`
+              formatter: (v) => `${v.split("_")[0]}`
             }
-          }
-        });
-        querySingleContainer.render();
-      });
-
-    fetch('https://gw.alipayobjects.com/os/bmw-prod/e00d52f4-2fa6-47ee-a0d7-105dd95bde20.json')
-      .then((res) => res.json())
-      .then((data) => {
-        // let querySingleContainer = new Line('querySingleContainer', {
-        //   data,
-        //   xField: 'year',
-        //   yField: 'gdp',
-        //   // 数据分组字段
-        //   seriesField: 'name',
-        //   legend: {
-        //     // 图例位置
-        //     position: 'top',
-        //   },
-        //   smooth: true,
-        //   // @TODO 后续会换一种动画方式
-        //   animation: {
-        //     appear: {
-        //       animation: 'path-in',
-        //       duration: 5000,
-        //     },
-        //   },
-        // });
-
-        let queryClusterContainer = new Line('queryClusterContainer', {
-          data,
-          xField: 'year',
-          yField: 'gdp',
-          seriesField: 'name',
-          yAxis: {
-            label: {
-              formatter: (v) => `${(v / 10e8).toFixed(1)} B`,
-            },
           },
           legend: {
             position: 'top',
@@ -182,14 +179,24 @@ export default {
               animation: 'path-in',
               duration: 5000,
             },
-          },
+          }
         });
-
-        // querySingleContainer.render();
-        queryClusterContainer.render();
-      });
-  },
-  methods: {}
+        querySingleContainer.render();
+      } else {
+        this.$message.error(data["message"]);
+      }
+    },
+    singleVersion (val) {
+      console.log(val + " : " + val.length);
+      // TODO version版本筛选条件发生变化，调用后端接口请求数据，然后重新渲染图表
+      // this.draw_table(result, 'querySingleContainer');
+    },
+    clusterVersion (val) {
+      console.log(val + " : " + val.length);
+      // TODO version版本筛选条件发生变化，调用后端接口请求数据，然后重新渲染图表
+      // this.draw_table(result, 'queryClusterContainer');
+    }
+  }
 };
 </script>
  
